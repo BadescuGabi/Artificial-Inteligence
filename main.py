@@ -34,10 +34,10 @@ class Joc:
         cls.matr = matr
         cls.j2_protectii = 0
         cls.j1_protectii = 0
-        cls.j1_bombe = 0
         cls.j1_mutari = 0
         cls.j2_mutari = 0
-        cls.j2_bombe = 0
+        cls.j1_bombe = []
+        cls.j2_bombe = []
         cls.dim_celula = dim_celula
         cls.p1_img = pygame.image.load('p1.png')
         cls.p1_img = pygame.transform.scale(cls.p1_img, (dim_celula, dim_celula))
@@ -47,6 +47,10 @@ class Joc:
         cls.ba_img = pygame.transform.scale(cls.ba_img, (dim_celula, dim_celula))
         cls.bi_img = pygame.image.load('BI.png')
         cls.bi_img = pygame.transform.scale(cls.bi_img, (dim_celula, dim_celula))
+        cls.ba2_img = pygame.image.load('BA2.png')
+        cls.ba2_img = pygame.transform.scale(cls.ba2_img, (dim_celula, dim_celula))
+        cls.bi2_img = pygame.image.load('BI2.png')
+        cls.bi2_img = pygame.transform.scale(cls.bi2_img, (dim_celula, dim_celula))
         cls.prot_img = pygame.image.load("protectie.png")
         cls.prot_img = pygame.transform.scale(cls.prot_img, (dim_celula, dim_celula))
         cls.celuleGrid = []  # este lista cu patratelele din grid
@@ -79,6 +83,15 @@ class Joc:
                     coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
             elif self.matr[linie][coloana] == 'b':
                 self.__class__.display.blit(self.__class__.bi_img, (
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+            elif self.matr[linie][coloana] == 'a':
+                self.__class__.display.blit(self.__class__.ba_img, (
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+            elif self.matr[linie][coloana] == 'q':
+                self.__class__.display.blit(self.__class__.ba2_img, (
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+            elif self.matr[linie][coloana] == 'w':
+                self.__class__.display.blit(self.__class__.bi2_img, (
                     coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
             elif self.matr[linie][coloana] == 'p':
                 self.__class__.display.blit(self.__class__.prot_img, (
@@ -465,19 +478,24 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i,j])
+                                        if len(Joc.j1_bombe)>1: #daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2]="a"
                                     ok = 1
                                     break
-                                elif mapa[i][j] == "1" and mapa[i][j - 1] != "#":
+                                elif mapa[i][j] == "1" and mapa[i][j - 1] != "#" and mapa[i][j - 1] != "b" and mapa[i][j - 1] != "a":
                                     mapa[i][j - 1] = "1"
                                     mapa[i][j] = ""
                                     ok = 1
                                     Joc.j1_mutari += 1
-                                    print(k, Joc.j1_mutari)
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
 
@@ -486,7 +504,7 @@ def main():
                             if ok:
                                 break
                             for j in range(nc):
-                                if mapa[i][j] == "1" and mapa[i][j + 1] == "p":
+                                if mapa[i][j] == "1" and mapa[i][j + 1] == "p" :
                                     mapa[i][j + 1] = "1"
                                     mapa[i][j] = ""
                                     Joc.j1_protectii += 1
@@ -495,9 +513,12 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
-                                elif mapa[i][j] == "1" and mapa[i][j + 1] != "#":
+                                elif mapa[i][j] == "1" and mapa[i][j + 1] != "#" and mapa[i][j + 1] != "b" and mapa[i][j +1] != "a" :
                                     mapa[i][j + 1] = "1"
                                     mapa[i][j] = ""
                                     ok = 1
@@ -505,7 +526,10 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
 
@@ -523,9 +547,12 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
-                                elif mapa[i][j] == "1" and mapa[i - 1][j] != "#":
+                                elif mapa[i][j] == "1" and mapa[i - 1][j] != "#" and mapa[i - 1][j] != "b" and mapa[i-1][j] != "a":
                                     mapa[i - 1][j] = "1"
                                     mapa[i][j] = ""
                                     ok = 1
@@ -533,7 +560,10 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
                     if event.key == pygame.K_DOWN:
@@ -547,13 +577,15 @@ def main():
                                     Joc.j1_protectii += 1
                                     ok = 1
                                     Joc.j1_mutari += 1
-                                    Joc.j1_bombe += 1
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe+=1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
-                                elif mapa[i][j] == "1" and mapa[i + 1][j] != "#":
+                                elif mapa[i][j] == "1" and mapa[i + 1][j] != "#" and mapa[i + 1][j] != "b" and mapa[i+1][j] != "a":
                                     mapa[i + 1][j] = "1"
                                     mapa[i][j] = ""
                                     ok = 1
@@ -561,11 +593,14 @@ def main():
                                     if Joc.j1_mutari == k:
                                         Joc.j1_mutari = 0
                                         mapa[i][j] = "b"
-                                        Joc.j1_bombe += 1
+                                        Joc.j1_bombe.append([i, j])
+                                        if len(Joc.j1_bombe) > 1:  # daca jucatorul avea deja minim o bomba pusa
+                                            i1, i2 = Joc.j1_bombe[len(Joc.j1_bombe) - 2]
+                                            mapa[i1][i2] = "a"
                                     break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
-                    print(Joc.j1_protectii)
-
+                    #print(Joc.j1_protectii)
+                    print(Joc.j1_bombe)
 
         # --------------------------------
         else:  # jucatorul e JMAX (calculatorul)
