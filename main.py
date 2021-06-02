@@ -1,6 +1,7 @@
 import time
 
-import pygame, sys
+import pygame
+import sys
 
 ADANCIME_MAX = 3
 
@@ -16,19 +17,27 @@ class Joc:
 	Clasa care defineste jocul. Se va schimba de la un joc la altul.
 	"""
     NR_COLOANE = None
-    NR_LINII= None
-    j1_protectii=None
-    j2_protectii=None
-    j1_bombe=None
-    j2_bombe=None
+    NR_LINII = None
+    j1_protectii = None
+    j2_protectii = None
+    j1_bombe = None
+    j2_bombe = None
+    j1_mutari = None
+    j2_mutari = None
     JMIN = None
     JMAX = None
     GOL = '#'
 
     @classmethod
-    def initializeaza(cls, matr,display,NR_LINII, NR_COLOANE, dim_celula=100,j1_protectii=0,j2_protectii=0,j1_bombe=0,j2_bombe=0):
+    def initializeaza(cls, matr, display, NR_LINII, NR_COLOANE, dim_celula=100):
         cls.display = display
-        cls.matr=matr
+        cls.matr = matr
+        cls.j2_protectii = 0
+        cls.j1_protectii = 0
+        cls.j1_bombe = 0
+        cls.j1_mutari = 0
+        cls.j2_mutari = 0
+        cls.j2_bombe = 0
         cls.dim_celula = dim_celula
         cls.p1_img = pygame.image.load('p1.png')
         cls.p1_img = pygame.transform.scale(cls.p1_img, (dim_celula, dim_celula))
@@ -38,56 +47,56 @@ class Joc:
         cls.ba_img = pygame.transform.scale(cls.ba_img, (dim_celula, dim_celula))
         cls.bi_img = pygame.image.load('BI.png')
         cls.bi_img = pygame.transform.scale(cls.bi_img, (dim_celula, dim_celula))
-        cls.prot_img=pygame.image.load("protectie.png")
-        cls.prot_img=pygame.transform.scale(cls.prot_img, (dim_celula,dim_celula))
+        cls.prot_img = pygame.image.load("protectie.png")
+        cls.prot_img = pygame.transform.scale(cls.prot_img, (dim_celula, dim_celula))
         cls.celuleGrid = []  # este lista cu patratelele din grid
-        cls.NR_LINII=NR_LINII
-        cls.NR_COLOANE=NR_COLOANE
+        cls.NR_LINII = NR_LINII
+        cls.NR_COLOANE = NR_COLOANE
         for linie in range(NR_LINII):
             for coloana in range(NR_COLOANE):
                 patr = pygame.Rect(coloana * (dim_celula + 1), linie * (dim_celula + 1), dim_celula, dim_celula)
                 cls.celuleGrid.append(patr)
 
-    def deseneaza_grid(self, marcaj=None,mapa=None):  # tabla de exemplu este ["#","x","#","0",......]
-        if mapa!=None:
-            self.matr=mapa
+    def deseneaza_grid(self, marcaj=None, mapa=None):  # tabla de exemplu este ["#","x","#","0",......]
+        if mapa != None:
+            self.matr = mapa
         for ind in range(self.__class__.NR_COLOANE * self.__class__.NR_LINII):
-            linie = ind // self.__class__.NR_COLOANE # // inseamna div
+            linie = ind // self.__class__.NR_COLOANE  # // inseamna div
             coloana = ind % self.__class__.NR_COLOANE
             if marcaj == ind:
                 # daca am o patratica selectata, o desenez cu galben
                 culoare = (255, 255, 0)
-            elif  self.matr[linie][coloana]=="#":
-                    culoare=(105,105,105)
+            elif self.matr[linie][coloana] == "#":
+                culoare = (105, 105, 105)
             else:
                 culoare = (255, 255, 255)
             pygame.draw.rect(self.__class__.display, culoare, self.__class__.celuleGrid[ind])  # alb = (255,255,255)
             if self.matr[linie][coloana] == '1':
                 self.__class__.display.blit(self.__class__.p1_img, (
-                coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
             elif self.matr[linie][coloana] == '2':
                 self.__class__.display.blit(self.__class__.p2_img, (
-                coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
             elif self.matr[linie][coloana] == 'b':
                 self.__class__.display.blit(self.__class__.bi_img, (
-                coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
-            elif self.matr[linie][coloana]== 'p':
+                    coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
+            elif self.matr[linie][coloana] == 'p':
                 self.__class__.display.blit(self.__class__.prot_img, (
                     coloana * (self.__class__.dim_celula + 1), linie * (self.__class__.dim_celula + 1)))
         pygame.display.flip()  # obligatoriu pentru a actualiza interfata (desenul)
 
         pygame.display.update()
 
-
         pygame.display.flip()  # obligatoriu pentru a actualiza interfata (desenul)
 
         pygame.display.update()
-    def __init__(self, matr=None,NR_LINII=None,NR_COLOANE=None):
-        self.ultima_mutare=None
-        #ii vom da tabla mereu deoarece aceasta este luata din fisier si nu avem cum sa o initializam
-        self.matr=matr
-        self.NR_LINII=NR_LINII
-        self.NR_COLOANE=NR_COLOANE
+
+    def __init__(self, matr=None, NR_LINII=None, NR_COLOANE=None):
+        self.ultima_mutare = None
+        # ii vom da tabla mereu deoarece aceasta este luata din fisier si nu avem cum sa o initializam
+        self.matr = matr
+        self.NR_LINII = NR_LINII
+        self.NR_COLOANE = NR_COLOANE
 
     @classmethod
     def jucator_opus(cls, jucator):
@@ -129,13 +138,13 @@ class Joc:
 
     def linii_deschise(self, jucator):
         return (self.linie_deschisa(self.matr[0:3], jucator)
-				+ self.linie_deschisa(self.matr[3:6], jucator)
-				+ self.linie_deschisa(self.matr[6:9], jucator)
-				+ self.linie_deschisa(self.matr[0:9:3], jucator)
-				+ self.linie_deschisa(self.matr[1:9:3], jucator)
-				+ self.linie_deschisa(self.matr[2:9:3], jucator)
-				+ self.linie_deschisa(self.matr[0:9:4], jucator)  # prima diagonala
-				+ self.linie_deschisa(self.matr[2:8:2], jucator))  # a doua diagonala
+                + self.linie_deschisa(self.matr[3:6], jucator)
+                + self.linie_deschisa(self.matr[6:9], jucator)
+                + self.linie_deschisa(self.matr[0:9:3], jucator)
+                + self.linie_deschisa(self.matr[1:9:3], jucator)
+                + self.linie_deschisa(self.matr[2:9:3], jucator)
+                + self.linie_deschisa(self.matr[0:9:4], jucator)  # prima diagonala
+                + self.linie_deschisa(self.matr[2:8:2], jucator))  # a doua diagonala
 
     def estimeaza_scor(self, adancime):
         t_final = self.final()
@@ -388,40 +397,43 @@ def deseneaza_alegeri(display, tabla_curenta):
 
 
 def harta():
-    global k
+    k=0
     with open("harta.txt", "r") as f:
         linie = f.readline().split("\n")[0]
-        lista_linie=[]
+        lista_linie = []
         for i in linie:
             lista_linie.append(i)
         harta = []
         while linie:
-            if len(linie)==1:
-                k=linie[0]
+            if len(linie) == 1:
+                k = linie[0]
                 linie = f.readline().split("\n")[0]
                 break
             else:
                 harta.append(lista_linie)
-                lista_linie=[]
+                lista_linie = []
                 linie = f.readline().split("\n")[0]
                 if len(linie):
                     for i in linie:
                         lista_linie.append(i)
-        return harta
+        return [harta,int(k)]
+
 
 def main():
     # initializare algoritm
     pygame.init()
-    ok=0
+    ok = 0
+
     pygame.display.set_caption("Omu cu bombe")
-    mapa= harta()
-    nc =len(mapa[0])
+    mapa = harta()[0]
+    k=harta()[1]
+    nc = len(mapa[0])
     nl = len(mapa)
     w = 30
     ecran = pygame.display.set_mode(size=(nc * (w + 1) - 1, nl * (w + 1) - 1))  # N *w+ N-1= N*(w+1)-1
-    Joc.initializeaza(mapa,ecran, NR_LINII=nl, NR_COLOANE=nc, dim_celula=w)
+    Joc.initializeaza(mapa, ecran, NR_LINII=nl, NR_COLOANE=nc, dim_celula=w)
     # initializare tabla
-    tabla_curenta = Joc(mapa,NR_LINII=nl, NR_COLOANE=nc)
+    tabla_curenta = Joc(mapa, NR_LINII=nl, NR_COLOANE=nc)
     Joc.JMIN, tip_algoritm = deseneaza_alegeri(ecran, tabla_curenta)
     print(Joc.JMIN, tip_algoritm)
     Joc.JMAX = '1' if Joc.JMIN == '2' else '2'
@@ -435,64 +447,124 @@ def main():
         if (stare_curenta.j_curent == Joc.JMIN):
 
             for event in pygame.event.get():
-                ok=0
+                ok = 0  # pentru mutari
                 if event.type == pygame.QUIT:
                     # iesim din program
                     pygame.quit()
                     sys.exit()
-                elif event.type==pygame.KEYDOWN:
-                    if event.key==pygame.K_LEFT:
-                        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
                         for i in range(nl):
-                            if ok:break
+                            if ok: break
                             for j in range(nc):
-                                if mapa[i][j]=="1" and mapa[i][j-1]!="#":
-                                    mapa[i][j-1]="1"
-                                    mapa[i][j]=""
-                                    ok=1
+                                if mapa[i][j] == "1" and mapa[i][j - 1] == "p":
+                                    mapa[i][j - 1] = "1"
+                                    mapa[i][j] = ""
+                                    Joc.j1_protectii += 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
+                                    ok = 1
                                     break
-
+                                elif mapa[i][j] == "1" and mapa[i][j - 1] != "#":
+                                    mapa[i][j - 1] = "1"
+                                    mapa[i][j] = ""
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    print(k, Joc.j1_mutari)
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
+                                    break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
 
                     if event.key == pygame.K_RIGHT:
-                        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                         for i in range(nl):
                             if ok:
                                 break
                             for j in range(nc):
-                                if mapa[i][j] == "1" and mapa[i][j + 1] != "#":
+                                if mapa[i][j] == "1" and mapa[i][j + 1] == "p":
                                     mapa[i][j + 1] = "1"
                                     mapa[i][j] = ""
-                                    ok=1
+                                    Joc.j1_protectii += 1
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
                                     break
-
+                                elif mapa[i][j] == "1" and mapa[i][j + 1] != "#":
+                                    mapa[i][j + 1] = "1"
+                                    mapa[i][j] = ""
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
+                                    break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
 
                     if event.key == pygame.K_UP:
-                        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                         for i in range(nl):
                             if ok:
                                 break
                             for j in range(nc):
-                                if mapa[i][j] == "1" and mapa[i-1][j] != "#":
-                                    mapa[i-1][j] = "1"
+                                if mapa[i][j] == "1" and mapa[i - 1][j] == "p":
+                                    mapa[i - 1][j] = "1"
                                     mapa[i][j] = ""
-                                    ok=1
+                                    Joc.j1_protectii += 1
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
+                                    break
+                                elif mapa[i][j] == "1" and mapa[i - 1][j] != "#":
+                                    mapa[i - 1][j] = "1"
+                                    mapa[i][j] = ""
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
                                     break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
                     if event.key == pygame.K_DOWN:
-                        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                         for i in range(nl):
                             if ok:
                                 break
                             for j in range(nc):
-                                if mapa[i][j] == "1" and mapa[i+1][j] != "#":
-                                    mapa[i+1][j] = "1"
+                                if mapa[i][j] == "1" and mapa[i + 1][j] == "p":
+                                    mapa[i + 1][j] = "1"
                                     mapa[i][j] = ""
-                                    ok=1
+                                    Joc.j1_protectii += 1
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    Joc.j1_bombe += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe+=1
                                     break
-
+                                elif mapa[i][j] == "1" and mapa[i + 1][j] != "#":
+                                    mapa[i + 1][j] = "1"
+                                    mapa[i][j] = ""
+                                    ok = 1
+                                    Joc.j1_mutari += 1
+                                    if Joc.j1_mutari == k:
+                                        Joc.j1_mutari = 0
+                                        mapa[i][j] = "b"
+                                        Joc.j1_bombe += 1
+                                    break
                         stare_curenta.tabla_joc.deseneaza_grid(mapa=mapa)
+                    print(Joc.j1_protectii)
 
 
         # --------------------------------
@@ -519,7 +591,6 @@ def main():
 
             # S-a realizat o mutare. Schimb jucatorul cu cel opus
             stare_curenta.j_curent = Joc.jucator_opus(stare_curenta.j_curent)
-
 
 
 if __name__ == "__main__":
